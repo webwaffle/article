@@ -1,0 +1,65 @@
+<div id="create-form">
+    <div class="row">
+        <div class="input-field col s6">
+            <input type="text" id="article-name">
+            <label for="article-name">Article Title</label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-field col s12">
+            <input type="text" id="article-desc">
+            <label for="article-desc">Description (Optional)</label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-field col s12">
+            <textarea id="article-text" class="materialize-textarea"></textarea>
+            <label for="article-text">Article Text (Markdown)</label>
+        </div>
+    </div>
+    <button id="submit-article" class="btn btn-large waves-effect waves-light blue darken-4">Create</button>
+    <div id="md-out"></div>
+</div>
+<p id="loading-message"></p>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.8.6/showdown.min.js"></script>
+<script>
+    function removeElement(id) {
+        var element = document.getElementById(id);
+        element.parentNode.removeChild(element);
+    }
+    document.getElementById('submit-article').addEventListener('click', function() {
+        var data = JSON.stringify({
+            name: document.getElementById('article-name').value,
+            body: document.getElementById('article-text').value,
+            desc: document.getElementById('article-desc').value
+        });
+        removeElement('article-name');
+        removeElement('article-text');
+        removeElement('article-desc');
+        removeElement('md-out');
+        removeElement('submit-article');
+        var req = new XMLHttpRequest();
+        req.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById('loading-message').innerHTML = "Sent!";
+                M.toast('Article Posted!');
+            } else {
+                document.getElementById('loading-message').innerHTML = "Sending...";
+            }
+        }
+        req.open("POST", "/api/post-article");
+        req.setRequestHeader("Content-Type", "application/json");
+        req.send(data);
+    });
+    var converter = new showdown.Converter({
+        noHeaderId: true,
+        strikethrough: true,
+        emoji: true
+    });
+    document.getElementById("article-text").addEventListener("input", function() {
+        var md = document.getElementById("article-text").value;
+        var html = converter.makeHtml(md);
+        document.getElementById('md-out').innerHTML = html;
+    });
+
+</script>
